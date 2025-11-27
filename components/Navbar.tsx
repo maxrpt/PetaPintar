@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
             {/* Logo and App Name now act as the main navigation link to home */}
             <Link to="/" className="flex items-center gap-2 text-white font-bold text-xl hover:opacity-90 transition-opacity">
               <Map className="w-6 h-6" />
-              <span>PetaPintar</span>
+              <span>PetaPintar - AGENT03 RANTAU</span>
             </Link>
           </div>
           {/* Admin and Public links are removed for a cleaner, context-separated UI */}
