@@ -278,6 +278,23 @@ const MapView: React.FC<MapViewProps> = ({ pins, onMapClick, selectedLocation, f
         <AttributionControl position="bottomleft" prefix={false} />
         <ZoomControl position="bottomright" />
         <TileLayer url={TILE_LAYER_URL} />
+        // ... (Kode sebelumnya) ...
+        <AttributionControl position="bottomleft" prefix={false} />
+        <ZoomControl position="bottomright" />
+        <TileLayer url={TILE_LAYER_URL} />
+        
+        {/* 👇 FITUR BARU: Credit Badge - TIM NM RANTAU 👇 */}
+        <div className="absolute bottom-8 left-2 z-[400] pointer-events-none select-none">
+          <div className="bg-white/70 backdrop-blur-[2px] border border-slate-200/50 px-2.5 py-1 rounded-lg shadow-sm transition-opacity hover:opacity-100 opacity-80">
+            <p className="text-[9px] leading-none text-slate-500 font-medium">
+              Created by <span className="font-black text-indigo-900 tracking-wide">TIM NM RANTAU</span>
+            </p>
+          </div>
+        </div>
+        {/* 👆 SELESAI FITUR BARU 👆 */}
+
+        <MapEffect location={focusLocation || null} />
+// ... (Kode selanjutnya) ...
         <MapEffect location={focusLocation || null} />
         <LocationMarker 
           onMapClick={(lat, lng) => { handleMapBackgroundClick(); if (onMapClick) onMapClick(lat, lng); }} 
