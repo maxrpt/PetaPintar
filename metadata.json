@@ -1,0 +1,5 @@
+{
+  "name": "PetaPintar - Direktori Lokasi",
+  "description": "Aplikasi pemetaan interaktif dengan dashboard admin untuk mengelola lokasi wisata dan kuliner, dilengkapi fitur AI untuk deskripsi otomatis.",
+  "requestFramePermissions": []
+}

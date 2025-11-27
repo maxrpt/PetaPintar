@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PetaPintar - Direktori Lokasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      /* Light Mode Scrollbar (Default) */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #f1f1f1; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+      .leaflet-popup-content-wrapper {
+        border-radius: 1rem;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        background-color: white;
+        color: #1e293b;
+      }
+      .leaflet-popup-content {
+        margin: 0;
+        width: min(320px, 85vw) !important;
+      }
+      .leaflet-popup-tip {
+        background: white;
+      }
+      a.leaflet-popup-close-button {
+        top: 10px !important;
+        right: 10px !important;
+        color: white !important;
+        font-size: 20px !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        z-index: 100;
+        transition: transform 0.2s;
+      }
+      a.leaflet-popup-close-button:hover {
+        color: #f1f1f1 !important;
+        transform: scale(1.1);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "react-leaflet": "https://aistudiocdn.com/react-leaflet@^5.0.0",
+    "leaflet": "https://aistudiocdn.com/leaflet@^1.9.4",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.43.4",
+    "supabase/": "https://aistudiocdn.com/supabase@^2.62.5/"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-50 text-slate-900 font-sans antialiased">
+    <div id="root"></div>
+    <script>
+      // Define global variables for Supabase keys
+      // IMPORTANT: Replace 'YOUR_SUPABASE_PROJECT_URL' and 'YOUR_SUPABASE_ANON_KEY'
+      // with your actual Supabase project URL and anon public key.
+      // These will be read by lib/supabaseClient.ts
+      window.VITE_SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
+      window.VITE_SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    </script>
+  </body>
+</html>
