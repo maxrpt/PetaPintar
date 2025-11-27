@@ -1,21 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import PublicDashboard from './pages/PublicDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPage';
 import Navbar from './components/Navbar';
+import { supabase } from './lib/supabaseClient';
+import { Session } from '@supabase/supabase-js';
 
 const App = () => {
-  // Simple auth state management
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setLoading(false);
+    };
+
+    getSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-  };
+  // Tampilkan loading screen sederhana saat session sedang diverifikasi
+  if (loading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-100">
+            <div className="text-slate-500 font-medium">Memuat Aplikasi...</div>
+        </div>
+    );
+  }
 
   return (
     <HashRouter>
@@ -27,10 +52,10 @@ const App = () => {
             <Route 
               path="/admin" 
               element={
-                isAuthenticated ? (
+                session ? (
                   <AdminDashboard onLogout={handleLogout} />
                 ) : (
-                  <LoginPage onLogin={handleLogin} />
+                  <LoginPage />
                 )
               } 
             />
