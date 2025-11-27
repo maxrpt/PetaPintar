@@ -6,16 +6,45 @@ import { CATEGORY_ICONS, CATEGORY_COLORS, DEFAULT_CENTER, DEFAULT_ZOOM } from '.
 import { MapPin, Navigation, ExternalLink, User, MessageCircle, Clock, ArrowRight, Network, Flag, Send, X, Edit2, Loader2, CheckCircle } from 'lucide-react';
 import { addReport } from '../services/storageService'; // Now an async function
 
-// Fix for default Leaflet icons in React
-const createCustomIcon = (icon: string) => {
-  const bgColor = 'bg-white border-indigo-600';
-  const textColor = '';
+// --- KONFIGURASI ICON PIN ALA GOOGLE MAPS ---
+
+// Mapping warna Hex untuk SVG (karena Tailwind class tidak bisa dipakai langsung di dalam string SVG)
+const PIN_COLORS: Record<string, string> = {
+  [LocationCategory.DROP_POINT]: '#2563eb',    // Blue-600
+  [LocationCategory.TRANSIT_CENTER]: '#f97316', // Orange-500
+  [LocationCategory.GATEWAY]: '#9333ea',        // Purple-600
+};
+
+const createCustomIcon = (category: LocationCategory, iconChar: string) => {
+  const color = PIN_COLORS[category] || '#ea4335'; // Default red if not found
+  
+  // SVG Path untuk bentuk Pin Map standar (Teardrop shape)
+  const pinSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="38" height="48">
+      <!-- Shadow Filter -->
+      <defs>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.4)"/>
+        </filter>
+      </defs>
+      
+      <!-- Main Pin Shape -->
+      <path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0z" fill="${color}" filter="url(#shadow)" stroke="white" stroke-width="8"/>
+      
+      <!-- White Circle Container -->
+      <circle cx="192" cy="192" r="80" fill="white"/>
+      
+      <!-- Icon/Emoji Centered -->
+      <text x="50%" y="42%" dominant-baseline="middle" text-anchor="middle" font-size="90" font-family="Arial, sans-serif">${iconChar}</text>
+    </svg>
+  `;
+
   return L.divIcon({
-    html: `<div class="flex items-center justify-center w-9 h-9 ${bgColor} rounded-full shadow-lg border-2 ${textColor} text-xl transform hover:scale-110 transition-transform duration-200 cursor-pointer">${icon}</div>`,
-    className: 'custom-div-icon',
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -36]
+    html: `<div class="transform hover:-translate-y-2 transition-transform duration-200 drop-shadow-md origin-bottom">${pinSvg}</div>`,
+    className: 'custom-google-pin', // Class kosong agar tidak ada style bawaan Leaflet box
+    iconSize: [38, 48],
+    iconAnchor: [19, 48], // Ujung lancip bawah ada di tengah-bawah (x=width/2, y=height)
+    popupAnchor: [0, -50] // Popup muncul di atas pin
   });
 };
 
@@ -278,6 +307,7 @@ const MapView: React.FC<MapViewProps> = ({ pins, onMapClick, selectedLocation, f
         <AttributionControl position="bottomleft" prefix={false} />
         <ZoomControl position="bottomright" />
         <TileLayer url={TILE_LAYER_URL} />
+        
         {/* 👇 FITUR BARU: Credit Badge - TIM NM RANTAU 👇 */}
         <div className="absolute bottom-8 left-2 z-[400] pointer-events-none select-none">
           <div className="bg-white/70 backdrop-blur-[2px] border border-slate-200/50 px-2.5 py-1 rounded-lg shadow-sm transition-opacity hover:opacity-100 opacity-80">
@@ -287,6 +317,7 @@ const MapView: React.FC<MapViewProps> = ({ pins, onMapClick, selectedLocation, f
           </div>
         </div>
         {/* 👆 SELESAI FITUR BARU 👆 */}
+
         <MapEffect location={focusLocation || null} />
         <LocationMarker 
           onMapClick={(lat, lng) => { handleMapBackgroundClick(); if (onMapClick) onMapClick(lat, lng); }} 
@@ -305,7 +336,13 @@ const MapView: React.FC<MapViewProps> = ({ pins, onMapClick, selectedLocation, f
           </>
         )}
         {pins.map((pin) => (
-          <Marker key={pin.id} position={[pin.lat, pin.lng]} icon={createCustomIcon(CATEGORY_ICONS[pin.category])} eventHandlers={{ click: () => handlePinClick(pin) }}>
+          <Marker 
+            key={pin.id} 
+            position={[pin.lat, pin.lng]} 
+            // Menggunakan fungsi createCustomIcon baru yang me-render pin Google Maps
+            icon={createCustomIcon(pin.category, CATEGORY_ICONS[pin.category])} 
+            eventHandlers={{ click: () => handlePinClick(pin) }}
+          >
             <Popup className="custom-popup" closeButton={true}>
               <div className="flex flex-col w-full font-sans bg-white shadow-sm overflow-hidden rounded-t-xl rounded-b-xl select-none">
                 <div className="relative h-40 w-full bg-slate-200 group">
@@ -345,17 +382,9 @@ const MapView: React.FC<MapViewProps> = ({ pins, onMapClick, selectedLocation, f
                 )}
                 <div className="p-3 bg-white grid grid-cols-4 gap-2">
                   <a href={`https://www.google.com/maps/dir/?api=1&destination=${pin.lat},${pin.lng}`} target="_blank" rel="noopener noreferrer" className="col-span-2 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold py-2.5 px-3 rounded-lg transition-all shadow-sm hover:shadow-md group"><Navigation className="w-3.5 h-3.5 group-hover:-rotate-45 transition-transform duration-300" />Rute</a>
-                  {pin.whatsapp ? <a href={`https://wa.me/${pin.whatsapp.replace(/^0/, '62').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="col-span-1 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all shadow-sm hover:shadow-md" title="WhatsApp"><MessageCircle className="w-4 h-4" /></a> : <div className="col-span-1 flex items-center justify-center bg-slate-50 text-slate-300 rounded-lg cursor-not-allowed border border-slate-100"><MessageCircle className="w-4 h-4" /></div>}
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${pin.lat},${pin.lng}`} target="_blank" rel="noopener noreferrer" className="col-span-1 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-lg transition-all hover:border-indigo-200 hover:shadow-sm" title="Lihat di Google Maps"><ExternalLink className="w-4 h-4" /></a>
+                  {pin.whatsapp ? <a href={`https://wa.me/${pin.whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white p-2.5 rounded-lg transition-colors"><MessageCircle className="w-4 h-4" /></a> : <button disabled className="flex items-center justify-center bg-slate-100 text-slate-400 p-2.5 rounded-lg cursor-not-allowed"><MessageCircle className="w-4 h-4" /></button>}
+                  {allowReporting && <button onClick={() => setReportingPin(pin)} className="flex items-center justify-center bg-amber-100 hover:bg-amber-200 text-amber-600 p-2.5 rounded-lg transition-colors" title="Lapor Data Salah"><Flag className="w-4 h-4" /></button>}
                 </div>
-                {allowReporting && (
-                  <div className="px-3 pb-3 bg-white">
-                      <button onClick={() => setReportingPin(pin)} className="w-full text-center text-[10px] font-bold text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 rounded-md py-1.5 transition-colors flex items-center justify-center gap-1">
-                          <Flag className="w-3 h-3"/>
-                          Data tidak akurat? Lapor / Sunting
-                      </button>
-                  </div>
-                )}
               </div>
             </Popup>
           </Marker>
