@@ -3,9 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PetaPintar - AGENT03 RANTAU</title>
+    <title>PetaPintar - Direktori Lokasi</title>
+    <!-- Favicon Peta -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS untuk Export/Import Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -83,19 +88,14 @@
     <div id="root"></div>
 
     <script>
-      // =========================================================================
-      // 👇👇👇 GANTI KODE DI BAWAH INI (BARIS INI SAMPAI BAWAH) 👇👇👇
-      // =========================================================================
+      // ⚠️ PENTING: GANTI NILAI DI BAWAH INI DENGAN KUNCI ASLI DARI SUPABASE ⚠️
+      // Jika tidak diganti, Anda akan melihat pesan peringatan di aplikasi.
       
-      // 1. Hapus 'YOUR_SUPABASE_PROJECT_URL' dan tempel URL dari Supabase Anda
-      window.VITE_SUPABASE_URL = 'https://uybaqdhxvfrlferzgawd.supabase.co';
+      // 1. Masukkan Project URL (dari Settings -> API di Supabase)
+      window.VITE_SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
       
-      // 2. Hapus 'YOUR_SUPABASE_ANON_KEY' dan tempel Anon Public Key dari Supabase Anda
-      window.VITE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5YmFxZGh4dmZybGZlcnpnYXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMzk2OTQsImV4cCI6MjA3OTcxNTY5NH0.Sedpi2p6_1DFl6t9GdrpINVHWQhkgddrmuDn045XMEo';
-      
-      // =========================================================================
-      // 👆👆👆 SELESAI PENGEDITAN DI SINI 👆👆👆
-      // =========================================================================
+      // 2. Masukkan anon public key (dari Settings -> API di Supabase)
+      window.VITE_SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
     </script>
     
     <script type="module" src="./index.tsx"></script>
