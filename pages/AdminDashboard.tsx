@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import MapView from '../components/MapView';
 import { getPins, addPin, updatePin, deletePin, importPins, getReports, addReport, deleteReport, uploadImage } from '../services/storageService'; // All are now async
 import { generatePlaceDescription } from '../services/geminiService';
 import { PinLocation, LocationCategory, OperationStatus, LocationReport } from '../types';
 import { CATEGORY_ICONS } from '../constants';
-import { Plus, Trash2, Wand2, MapPin, Save, Loader2, Image as ImageIcon, Phone, Home, LogOut, Upload, X, Crosshair, Edit3, User, Mail, MessageCircle, Clock, FileSpreadsheet, Search, LayoutList, Map as MapIcon, Download, Inbox, Check, GitMerge, AlertCircle, Eye } from 'lucide-react';
+import { Plus, Trash2, Wand2, MapPin, Save, Loader2, Image as ImageIcon, Phone, Home, LogOut, Upload, X, Crosshair, Edit3, User, Briefcase, MessageCircle, Clock, FileSpreadsheet, Search, LayoutList, Map as MapIcon, Download, Inbox, Check, GitMerge, AlertCircle, Eye } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import NotificationToast from '../components/NotificationToast'; // Import toast component
 
@@ -101,7 +102,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [phone, setPhone] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
-  const [email, setEmail] = useState('');
+  // Replaced email with partnershipStatus
+  const [partnershipStatus, setPartnershipStatus] = useState<'AGENT' | 'MITRA'>('AGENT');
   const [operatingHours, setOperatingHours] = useState('');
   const [status, setStatus] = useState<OperationStatus>('Buka');
   const [selectedCoord, setSelectedCoord] = useState<{lat: number; lng: number} | null>(null);
@@ -216,7 +218,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             "Telepon": pin.phone,
             "Pemilik": pin.ownerName,
             "WhatsApp": pin.whatsapp,
-            "Email": pin.email,
+            "Status Kemitraan": pin.partnershipStatus || 'AGENT', // Export Partnership Status
             "Jam Operasional": pin.operatingHours,
             "Status": pin.status
         }));
@@ -272,6 +274,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                          cat = LocationCategory.DROP_POINT; // Default
                      }
 
+                     // Parse Partnership Status
+                     let pStatus = row['Status Kemitraan'] || row['partnershipStatus'] || 'AGENT';
+                     if (pStatus !== 'AGENT' && pStatus !== 'MITRA') pStatus = 'AGENT';
+
                      newPins.push({
                          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                          name: String(name),
@@ -283,7 +289,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                          phone: String(row['Telepon'] || row['phone'] || ''),
                          ownerName: String(row['Pemilik'] || row['ownerName'] || ''),
                          whatsapp: String(row['WhatsApp'] || row['whatsapp'] || ''),
-                         email: String(row['Email'] || row['email'] || ''),
+                         partnershipStatus: pStatus, // Mapped
                          operatingHours: String(row['Jam Operasional'] || row['operatingHours'] || ''),
                          status: (row['Status'] === 'Tutup' || row['status'] === 'Tutup') ? 'Tutup' : 'Buka',
                          createdAt: new Date().toISOString(),
@@ -315,11 +321,42 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const triggerExcelInput = () => excelInputRef.current?.click();
 
   const handleEdit = (pin: PinLocation) => {
-    setEditingId(pin.id); setEditingCreatedAt(pin.createdAt); setName(pin.name); setCategory(pin.category); setDescription(pin.description); setAddress(pin.address || ''); setImageUrl(pin.imageUrl || ''); setPhone(pin.phone || ''); setOwnerName(pin.ownerName || ''); setWhatsapp(pin.whatsapp || ''); setEmail(pin.email || ''); setOperatingHours(pin.operatingHours || ''); setStatus(pin.status || 'Buka'); setSelectedCoord({ lat: pin.lat, lng: pin.lng }); setLatInput(pin.lat.toString()); setLngInput(pin.lng.toString());
+    setEditingId(pin.id); 
+    setEditingCreatedAt(pin.createdAt); 
+    setName(pin.name); 
+    setCategory(pin.category); 
+    setDescription(pin.description); 
+    setAddress(pin.address || ''); 
+    setImageUrl(pin.imageUrl || ''); 
+    setPhone(pin.phone || ''); 
+    setOwnerName(pin.ownerName || ''); 
+    setWhatsapp(pin.whatsapp || ''); 
+    setPartnershipStatus(pin.partnershipStatus || 'AGENT'); // Set partnership status
+    setOperatingHours(pin.operatingHours || ''); 
+    setStatus(pin.status || 'Buka'); 
+    setSelectedCoord({ lat: pin.lat, lng: pin.lng }); 
+    setLatInput(pin.lat.toString()); 
+    setLngInput(pin.lng.toString());
   };
 
   const resetForm = () => {
-    setEditingId(null); setEditingCreatedAt(null); setName(''); setDescription(''); setAddress(''); setImageUrl(''); setPhone(''); setOwnerName(''); setWhatsapp(''); setEmail(''); setOperatingHours(''); setStatus('Buka'); setSelectedCoord(null); setLatInput(''); setLngInput(''); setCategory(LocationCategory.DROP_POINT); if (fileInputRef.current) fileInputRef.current.value = '';
+    setEditingId(null); 
+    setEditingCreatedAt(null); 
+    setName(''); 
+    setDescription(''); 
+    setAddress(''); 
+    setImageUrl(''); 
+    setPhone(''); 
+    setOwnerName(''); 
+    setWhatsapp(''); 
+    setPartnershipStatus('AGENT'); // Reset to default
+    setOperatingHours(''); 
+    setStatus('Buka'); 
+    setSelectedCoord(null); 
+    setLatInput(''); 
+    setLngInput(''); 
+    setCategory(LocationCategory.DROP_POINT); 
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -333,12 +370,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       if (latNum < -90 || latNum > 90) errors.push("• Latitude tidak valid.");
       if (lngNum < -180 || lngNum > 180) errors.push("• Longitude tidak valid.");
     }
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("• Format email tidak valid.");
+    // Validation for email removed as field is removed
     if (!description.trim()) errors.push("• Deskripsi wajib diisi.");
     if (errors.length > 0) { showToast("Mohon perbaiki kesalahan:\n" + errors.join("\n"), "error"); return; }
     setIsSaving(true);
 
-    const pinData: PinLocation = { id: editingId || Date.now().toString(), name: name.trim(), category, description: description.trim(), address: address.trim(), phone: phone.trim(), ownerName: ownerName.trim(), whatsapp: whatsapp.trim(), email: email.trim(), imageUrl: imageUrl.trim() || undefined, operatingHours: operatingHours.trim(), status, lat: latNum, lng: lngNum, createdAt: editingCreatedAt || new Date().toISOString() };
+    const pinData: PinLocation = { 
+        id: editingId || Date.now().toString(), 
+        name: name.trim(), 
+        category, 
+        description: description.trim(), 
+        address: address.trim(), 
+        phone: phone.trim(), 
+        ownerName: ownerName.trim(), 
+        whatsapp: whatsapp.trim(), 
+        partnershipStatus: partnershipStatus, // Use status
+        imageUrl: imageUrl.trim() || undefined, 
+        operatingHours: operatingHours.trim(), 
+        status, 
+        lat: latNum, 
+        lng: lngNum, 
+        createdAt: editingCreatedAt || new Date().toISOString() 
+    };
+
     try {
       if (editingId) { await updatePin(pinData); showToast("Lokasi berhasil diperbarui!"); }
       else { await addPin(pinData); showToast("Lokasi berhasil ditambahkan!"); }
@@ -450,7 +504,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       <div><label className="block text-xs font-medium text-slate-600 mb-1.5">No. Telepon</label><input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-transparent" placeholder="021-xxxx" /></div>
                       <div><label className="block text-xs font-medium text-slate-600 mb-1.5">WhatsApp</label><input type="text" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-transparent" placeholder="0812xxxx" /></div>
                   </div>
-                   <div><label className="block text-xs font-medium text-slate-600 mb-1.5">Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-transparent" placeholder="email@contoh.com" /></div>
+                   {/* REPLACED EMAIL INPUT WITH PARTNERSHIP STATUS DROPDOWN */}
+                   <div>
+                       <label className="block text-xs font-medium text-slate-600 mb-1.5">Status Kemitraan</label>
+                       <select value={partnershipStatus} onChange={(e) => setPartnershipStatus(e.target.value as 'AGENT' | 'MITRA')} className={`w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold ${partnershipStatus === 'AGENT' ? 'text-cyan-700 bg-cyan-50' : 'text-amber-700 bg-amber-50'}`}>
+                           <option value="AGENT">AGENT</option>
+                           <option value="MITRA">MITRA</option>
+                       </select>
+                   </div>
               </div>
               <div className="space-y-4">
                   <div className="flex items-center gap-2 border-b border-slate-100 pb-2"><ImageIcon className="w-4 h-4 text-slate-400" /><h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Media & Deskripsi</h3></div>
@@ -486,15 +547,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
              </div>
              <div className="flex-1 overflow-auto">
                 <table className="w-full text-left border-collapse">
-                   <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm"><tr><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">No</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Nama Lokasi</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Kategori</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Alamat</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-right">Aksi</th></tr></thead>
+                   <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm"><tr><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">No</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Nama Lokasi</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Kategori</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Alamat</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Status Kemitraan</th><th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-right">Aksi</th></tr></thead>
                    <tbody className="bg-white divide-y divide-slate-100">
-                      {tablePins.length === 0 ? (<tr><td colSpan={5} className="px-5 py-8 text-center text-slate-400 text-sm italic">Tidak ada data lokasi yang ditemukan.</td></tr>) : (
+                      {tablePins.length === 0 ? (<tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400 text-sm italic">Tidak ada data lokasi yang ditemukan.</td></tr>) : (
                          tablePins.map((pin, index) => (
                             <tr key={pin.id} className={`hover:bg-slate-50 transition-colors group ${editingId === pin.id ? 'bg-indigo-50/60' : ''}`}>
                                <td className="px-5 py-3 text-xs text-slate-500 w-12">{index + 1}</td>
                                <td className="px-5 py-3"><div className="flex items-center gap-3"><div className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg bg-slate-100 border border-slate-200`}>{CATEGORY_ICONS[pin.category]}</div><div><div className="text-xs font-bold text-slate-700">{pin.name}</div><div className="text-[10px] text-slate-400 font-mono">{pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}</div></div></div></td>
                                <td className="px-5 py-3"><span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">{pin.category}</span></td>
                                <td className="px-5 py-3"><div className="max-w-xs text-xs text-slate-600 truncate" title={pin.address}>{pin.address || '-'}</div></td>
+                               <td className="px-5 py-3">
+                                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${pin.partnershipStatus === 'MITRA' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-cyan-50 text-cyan-600 border-cyan-200'}`}>
+                                       {pin.partnershipStatus || 'AGENT'}
+                                   </span>
+                               </td>
                                <td className="px-5 py-3 text-right"><div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => handleEdit(pin)} className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Edit"><Edit3 className="w-3.5 h-3.5" /></button><button onClick={() => handleDelete(pin.id)} className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                             </tr>
                          ))
