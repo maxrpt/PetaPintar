@@ -260,12 +260,54 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             const newPins: PinLocation[] = [];
             let successCount = 0;
 
+            // 👇 FUNGSI BARU: PEMBERSIH KOORDINAT CERDAS 👇
+            const cleanCoordinate = (val: any, type: 'lat' | 'lng'): number => {
+                if (typeof val === 'number') return val;
+                if (!val) return 0;
+
+                let str = String(val).trim();
+                
+                // 1. Ganti koma jadi titik (jika user pakai format Indo 2,5)
+                str = str.replace(/,/g, '.');
+
+                // 2. Cek apakah ada lebih dari satu titik (Kasus: 2.572.531)
+                const parts = str.split('.');
+                if (parts.length > 2) {
+                    // Ambil bagian depan sebagai angka utama, sisanya digabung jadi desimal
+                    // Contoh: 2.572.531 -> "2" . "572531" -> 2.572531
+                    str = parts[0] + '.' + parts.slice(1).join('');
+                }
+
+                // 3. Hapus karakter selain angka, titik, dan minus
+                str = str.replace(/[^0-9.-]/g, '');
+
+                let num = parseFloat(str);
+                if (isNaN(num)) return 0;
+
+                // 4. Heuristik Normalisasi (Safety Net)
+                // Jika angkanya masih integer besar (misal: 2572531 tanpa titik),
+                // bagi 10 terus sampai masuk range wajar GPS (-90/90 atau -180/180)
+                const limit = type === 'lat' ? 90 : 180;
+                while (Math.abs(num) > limit) {
+                    num = num / 10;
+                }
+
+                return num;
+            };
+            // 👆 SELESAI FUNGSI BARU 👆
+
             for (const row of jsonData as any[]) {
                 const name = row['Nama Lokasi'] || row['name'] || row['Name'];
-                const lat = row['Latitude'] || row['lat'] || row['Lat'];
-                const lng = row['Longitude'] || row['lng'] || row['Lng'];
+                
+                // Ambil data mentah
+                const latRaw = row['Latitude'] || row['lat'] || row['Lat'];
+                const lngRaw = row['Longitude'] || row['lng'] || row['Lng'];
 
-                if (name && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))) {
+                // Bersihkan koordinat
+                const lat = cleanCoordinate(latRaw, 'lat');
+                const lng = cleanCoordinate(lngRaw, 'lng');
+
+                if (name && lat !== 0 && lng !== 0) {
                      let cat = row['Kategori'] || row['category'];
                      if (!Object.values(LocationCategory).includes(cat)) {
                          cat = LocationCategory.DROP_POINT; // Default
@@ -278,8 +320,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                          name: String(name),
                          category: cat,
-                         lat: parseFloat(lat),
-                         lng: parseFloat(lng),
+                         lat: lat,
+                         lng: lng,
                          description: String(row['Deskripsi'] || row['description'] || ''),
                          address: String(row['Alamat'] || row['address'] || ''),
                          phone: String(row['Telepon'] || row['phone'] || ''),
