@@ -14,6 +14,7 @@ const PIN_COLORS: Record<string, string> = {
   [LocationCategory.DROP_POINT]: '#3b82f6',    // Blue-500 (Softer)
   [LocationCategory.TRANSIT_CENTER]: '#f97316', // Orange-500
   [LocationCategory.GATEWAY]: '#a855f7',        // Purple-500 (Softer)
+  [LocationCategory.MINI_DROP_POINT]: '#14b8a6', // Teal-500 (New for Mini Drop Point)
 };
 
 const createCustomIcon = (category: LocationCategory, iconChar: string) => {
@@ -248,6 +249,7 @@ const getPastelCategoryStyle = (category: LocationCategory) => {
         case LocationCategory.DROP_POINT: return 'bg-blue-50 text-blue-600 border-blue-100';
         case LocationCategory.TRANSIT_CENTER: return 'bg-orange-50 text-orange-600 border-orange-100';
         case LocationCategory.GATEWAY: return 'bg-purple-50 text-purple-600 border-purple-100';
+        case LocationCategory.MINI_DROP_POINT: return 'bg-teal-50 text-teal-600 border-teal-100';
         default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
 };
