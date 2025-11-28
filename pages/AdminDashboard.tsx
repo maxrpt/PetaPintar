@@ -251,56 +251,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
         const reader = new FileReader();
         reader.onload = async (e) => {
-                      const newPins: PinLocation[] = [];
-            let successCount = 0;
-
-            // 👇 FUNGSI BARU: PEMBERSIH KOORDINAT CERDAS 👇
-            const cleanCoordinate = (val: any, type: 'lat' | 'lng'): number => {
-                if (typeof val === 'number') return val;
-                if (!val) return 0;
-
-                let str = String(val).trim();
-                
-                // 1. Ganti koma jadi titik (jika user pakai format Indo 2,5)
-                str = str.replace(/,/g, '.');
-
-                // 2. Cek apakah ada lebih dari satu titik (Kasus: 2.572.531)
-                const parts = str.split('.');
-                if (parts.length > 2) {
-                    // Ambil bagian depan sebagai angka utama, sisanya digabung jadi desimal
-                    // Contoh: 2.572.531 -> "2" . "572531" -> 2.572531
-                    str = parts[0] + '.' + parts.slice(1).join('');
-                }
-
-                // 3. Hapus karakter selain angka, titik, dan minus
-                str = str.replace(/[^0-9.-]/g, '');
-
-                let num = parseFloat(str);
-                if (isNaN(num)) return 0;
-
-                // 4. Heuristik Normalisasi (Safety Net)
-                // Jika angkanya masih integer besar (misal: 2572531 tanpa titik),
-                // bagi 10 terus sampai masuk range wajar GPS (-90/90 atau -180/180)
-                const limit = type === 'lat' ? 90 : 180;
-                while (Math.abs(num) > limit) {
-                    num = num / 10;
-                }
-
-                return num;
-            };
-            // 👆 SELESAI FUNGSI BARU 👆
-
-            for (const row of jsonData as any[]) {
-                const name = row['Nama Lokasi'] || row['name'] || row['Name'];
-                
-                // 👇 TERAPKAN PEMBERSIH DI SINI 👇
-                const latRaw = row['Latitude'] || row['lat'] || row['Lat'];
-                const lngRaw = row['Longitude'] || row['lng'] || row['Lng'];
-                
-                const lat = cleanCoordinate(latRaw, 'lat');
-                const lng = cleanCoordinate(lngRaw, 'lng');
-
-                if (name && lat !== 0 && lng !== 0) {
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheetName = workbook.SheetNames[0];
