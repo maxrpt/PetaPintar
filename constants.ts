@@ -11,10 +11,12 @@ export const CATEGORY_COLORS: Record<LocationCategory, string> = {
   [LocationCategory.DROP_POINT]: 'bg-blue-600',
   [LocationCategory.TRANSIT_CENTER]: 'bg-orange-500',
   [LocationCategory.GATEWAY]: 'bg-purple-600',
+  [LocationCategory.MINI_DROP_POINT]: 'bg-teal-500',
 };
 
 export const CATEGORY_ICONS: Record<LocationCategory, string> = {
   [LocationCategory.DROP_POINT]: '📍',
   [LocationCategory.TRANSIT_CENTER]: '🏢',
   [LocationCategory.GATEWAY]: '🌐',
+  [LocationCategory.MINI_DROP_POINT]: '📦',
 };
